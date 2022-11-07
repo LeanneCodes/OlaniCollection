@@ -1,15 +1,22 @@
-import React, { useState } from 'react'
-import { Product } from '../../components'
-import { useStateContext } from '../../context/StateContext';
+import React, { useState } from 'react';
+import { AiOutlineMinus, AiOutlinePlus, AiFillStar, AiOutlineStar } from 'react-icons/ai';
+
 import { client, urlFor } from '../../lib/client';
-import { AiOutlineMinus, AiOutlinePlus, AiOutlineStar, AiFillStar } from 'react-icons/ai';
+import { Product } from '../../components';
+import { useStateContext } from '../../context/StateContext';
 
-const ProductDeatils = ({ product, products }) => {
-    const { image, name, details, price } = product;
-    const [index, setIndex] = useState(0);
-    const { decQty, incQty, qty, onAdd } = useStateContext();
+const ProductDetails = ({ product, products }) => {
+  const { image, name, details, price } = product;
+  const [index, setIndex] = useState(0);
+  const { decQty, incQty, qty, onAdd, setShowCart } = useStateContext();
 
-return (
+  const handleBuyNow = () => {
+    onAdd(product, qty);
+
+    setShowCart(true);
+  }
+
+  return (
     <div>
       <div className="product-detail-container">
         <div>
@@ -49,23 +56,23 @@ return (
             <h3>Quantity:</h3>
             <p className="quantity-desc">
               <span className="minus" onClick={decQty}><AiOutlineMinus /></span>
-              <span className="num" onClick="">{qty}</span>
+              <span className="num">{qty}</span>
               <span className="plus" onClick={incQty}><AiOutlinePlus /></span>
             </p>
           </div>
           <div className="buttons">
-            <button type='button' className='add-to-cart' onClick={() => onAdd(product, qty)}>Add to cart</button>
-            <button type='button' className='buy-now' onClick="">Buy Now</button>
+            <button type="button" className="add-to-cart" onClick={() => onAdd(product, qty)}>Add to Cart</button>
+            <button type="button" className="buy-now" onClick={handleBuyNow}>Buy Now</button>
           </div>
         </div>
       </div>
 
-      <div className='maylike-products-wrapper'>
+      <div className="maylike-products-wrapper">
           <h2>You may also like</h2>
-          <div className='marquee'>
-            <div className='maylike-products-container track'>
+          <div className="marquee">
+            <div className="maylike-products-container track">
               {products.map((item) => (
-                <Product key={item._id} product={item}/>
+                <Product key={item._id} product={item} />
               ))}
             </div>
           </div>
@@ -75,39 +82,39 @@ return (
 }
 
 export const getStaticPaths = async () => {
-    const query = `*[_type == "product"] {
-        slug {
-            current
-        }
+  const query = `*[_type == "product"] {
+    slug {
+      current
     }
-    `;
+  }
+  `;
 
-    const products = await client.fetch(query);
+  const products = await client.fetch(query);
 
-    const paths = products.map((product) => ({
-        params: {
-            slug: product.slug.current
-        }
-    }));
-
-    return {
-        paths,
-        fallback: 'blocking'
+  const paths = products.map((product) => ({
+    params: { 
+      slug: product.slug.current
     }
+  }));
+
+  return {
+    paths,
+    fallback: 'blocking'
+  }
 }
 
 export const getStaticProps = async ({ params: { slug }}) => {
-    const query = `*[_type == "product" && slug.current == '${slug}'][0]`;
-    const productsQuery = '*[_type == "product"]'
-    
-    const product = await client.fetch(query);
-    const products = await client.fetch(productsQuery);
+  const query = `*[_type == "product" && slug.current == '${slug}'][0]`;
+  const productsQuery = '*[_type == "product"]'
   
-    console.log(product);
-  
-    return {
-      props: { products, product }
-    }
+  const product = await client.fetch(query);
+  const products = await client.fetch(productsQuery);
+
+  console.log(product);
+
+  return {
+    props: { products, product }
+  }
 }
 
-export default ProductDeatils
+export default ProductDetails
